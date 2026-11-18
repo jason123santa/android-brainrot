@@ -10,7 +10,7 @@ This repository includes **the Android source, build scripts, and the exported m
 
 ## License and model-data caveats
 
-The original app code, scripts and documentation are licensed under **[Apache-2.0](LICENSE)**. Preserve [NOTICE](NOTICE) and applicable third-party notices when redistributing. The AI-generated-code disclosure above remains applicable.
+The original app code, scripts and documentation are licensed under **[Apache-2.0](LICENSE)**. Copyright (c) 2026 **jason123santa**, dated **11/18/2026**. Preserve [NOTICE](NOTICE) and applicable third-party notices when redistributing. The AI-generated-code disclosure above remains applicable.
 
 The base model `nkthebass/tinybrainbot-10m-v2-base` also declares Apache-2.0; **it is not license-free**. The bundled modified/quantized model has separate scope and provenance described in [MODEL_LICENSE.md](MODEL_LICENSE.md).
 

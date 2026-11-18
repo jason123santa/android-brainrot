@@ -10,9 +10,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    # Exact unmodified Apache license text retrieved from apache.org.
-    assert hashlib.sha256((ROOT / 'LICENSE').read_bytes()).hexdigest() == (
+    # Project attribution precedes the exact, unmodified Apache license text.
+    copyright_header = b'Copyright (c) 2026 jason123santa\nCopyright notice date: 11/18/2026\n'
+    license_text = (ROOT / 'LICENSE').read_bytes()
+    assert license_text.startswith(copyright_header)
+    assert hashlib.sha256(license_text[len(copyright_header):]).hexdigest() == (
         'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30')
+    project_notice = (ROOT / 'NOTICE').read_text(encoding='utf-8')
+    assert 'Copyright (c) 2026 jason123santa' in project_notice
+    assert 'Copyright notice date: 11/18/2026' in project_notice
     audit = json.loads((ROOT / 'docs/upstream-licenses.json').read_text(encoding='utf-8'))
     model_hash = hashlib.sha256((ROOT / 'assets/model.bin').read_bytes()).hexdigest()
     assert audit['bundled_model_sha256'] == model_hash
