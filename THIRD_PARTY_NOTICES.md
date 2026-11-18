@@ -88,4 +88,4 @@ The base-model card lists these datasets. Their labels apply to the published da
 4. Review transitive content/code/generator rights and applicable law for the intended release, especially public/commercial deployment.
 5. Preserve licenses, attributions and change notices with model/APK distributions. The build embeds project legal documents under `assets/legal/`.
 
-The repository remains private; privacy is not a substitute for permission. The app code can have a clear license while model clearance remains unresolved. This audit cannot honestly certify that no licenses or obligations apply to all training sources.
+Repository visibility is not a substitute for permission. A public repository does not establish third-party rights or clear the model for commercial use. The app code can have a clear license while model clearance remains unresolved. This audit cannot honestly certify that no licenses or obligations apply to all training sources.
