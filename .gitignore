@@ -1,0 +1,30 @@
+# Generated outputs, dependencies and model files stay local.
+build/
+dist/
+checkpoint/
+model-checkpoint/
+__pycache__/
+*.pyc
+*.bin
+*.safetensors
+*.gguf
+*.llamafile
+*.apk
+*.dex
+*.class
+*.jar
+*.log
+
+# Never commit credentials, signing material or machine-local settings.
+*.keystore
+*.jks
+*.p12
+*.pem
+*.key
+.env
+.env.*
+.venv/
+venv/
+local.properties
+.idea/
+.vscode/

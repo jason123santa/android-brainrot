@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.brainrot.legacy" android:versionCode="1" android:versionName="1.0">
+    <!-- On API 3, target SDK defaults to min SDK; targetSdkVersion arrived later. -->
+    <uses-sdk android:minSdkVersion="3" />
+    <!-- No Internet, storage, native library, or CPU-feature requirements. -->
+    <application android:label="Brainrot 10M">
+        <activity android:name=".ChatActivity" android:label="Brainrot 10M"
+            android:configChanges="keyboardHidden|orientation" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
