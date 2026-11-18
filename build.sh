@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Requires JDK 8 javac, java, aapt, jarsigner, keytool, Python 3, curl and sha256sum.
 # Downloads pinned API stubs/dx on first build; no Gradle/NDK or HF checkpoint.
 set -euo pipefail
@@ -36,7 +37,17 @@ with open(sys.argv[1], 'rb') as f:
 PY
 "$AAPT" package -f -M "$ROOT/AndroidManifest.xml" -I "$ANDROID_JAR" \
     -A "$ROOT/assets" -0 bin -F "$BUILD/unsigned.apk"
-(cd "$BUILD" && "$AAPT" add unsigned.apk classes.dex)
+# Keep readable licenses, attribution and modification notices with the model/APK.
+mkdir -p "$BUILD/assets/legal/licenses"
+for document in LICENSE NOTICE MODEL_LICENSE.md THIRD_PARTY_NOTICES.md; do
+    cp "$ROOT/$document" "$BUILD/assets/legal/$document"
+done
+cp "$ROOT/docs/upstream-licenses.json" "$BUILD/assets/legal/upstream-licenses.json"
+cp "$ROOT/licenses/OpenAI-GPT2-LICENSE.txt" "$BUILD/assets/legal/licenses/OpenAI-GPT2-LICENSE.txt"
+(cd "$BUILD" && "$AAPT" add unsigned.apk classes.dex \
+    assets/legal/LICENSE assets/legal/NOTICE assets/legal/MODEL_LICENSE.md \
+    assets/legal/THIRD_PARTY_NOTICES.md assets/legal/upstream-licenses.json \
+    assets/legal/licenses/OpenAI-GPT2-LICENSE.txt)
 # Optional: use SDK zipalign if installed. Not required for streamed assets.
 if command -v zipalign >/dev/null 2>&1; then
     zipalign -f 4 "$BUILD/unsigned.apk" "$BUILD/aligned.apk"

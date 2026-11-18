@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Export the local HF Llama to the dependency-free Java runtime format."""
 import argparse
 import hashlib

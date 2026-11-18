@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Cross-check the actual Java engine against HF tokenizer and quantized PyTorch."""
 import argparse
 import subprocess

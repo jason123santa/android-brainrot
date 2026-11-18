@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Small, pinned legacy API stubs and DEX compiler. No Android Studio/Gradle needed.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)

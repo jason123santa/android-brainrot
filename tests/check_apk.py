@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Check legacy packaging invariants; not a substitute for device testing."""
 import hashlib
 import struct
@@ -20,6 +21,10 @@ with zipfile.ZipFile(APK) as apk:
     assert struct.unpack('<I', dex[8:12])[0] == zlib.adler32(dex[12:]) & 0xffffffff
     assert apk.getinfo('assets/model.bin').compress_type == zipfile.ZIP_STORED
     assert apk.read('assets/model.bin') == (ROOT / 'assets/model.bin').read_bytes()
+    for document in ['LICENSE', 'NOTICE', 'MODEL_LICENSE.md', 'THIRD_PARTY_NOTICES.md',
+                     'licenses/OpenAI-GPT2-LICENSE.txt']:
+        assert apk.read('assets/legal/' + document) == (ROOT / document).read_bytes()
+    assert apk.read('assets/legal/upstream-licenses.json') == (ROOT / 'docs/upstream-licenses.json').read_bytes()
     signatures = [n for n in names if n.startswith('META-INF/') and n.endswith('.SF')]
     assert signatures and b'SHA1-Digest' in apk.read(signatures[0])
     assert any(n.startswith('META-INF/') and n.endswith('.RSA') for n in names)
@@ -31,5 +36,5 @@ assert not manifest.findall('uses-permission')
 compiled_manifest = subprocess.check_output(['aapt', 'dump', 'xmltree', str(APK), 'AndroidManifest.xml'], text=True)
 assert 'android:minSdkVersion' in compiled_manifest and '(type 0x10)0x3' in compiled_manifest
 assert 'E: uses-permission' not in compiled_manifest
-print('PASS: API 3 manifest, DEX 035 integrity, no native ABI restriction, uncompressed model, SHA-1 JAR signature')
+print('PASS: API 3 manifest, DEX 035 integrity, no native ABI restriction, uncompressed model, SHA-1 JAR signature, bundled legal notices')
 print('APK SHA-256:', hashlib.sha256(APK.read_bytes()).hexdigest())

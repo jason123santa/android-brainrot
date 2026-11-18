@@ -8,6 +8,16 @@ Offline Android inference code for the `chat-model-10m-brainrot-v2` checkpoint.
 
 This repository includes **the Android source, build scripts, and the exported model/tokenizer** in `assets/model.bin`. You can build directly from a checkout; the original Hugging Face checkpoint is **not required**. APKs, downloaded build tools, signing keys and machine-local settings remain excluded. The resulting APK is `dist/brainrot-legacy-debug.apk` (about 9.7 MiB).
 
+## License and model-data caveats
+
+The original app code, scripts and documentation are licensed under **[Apache-2.0](LICENSE)**. Preserve [NOTICE](NOTICE) and applicable third-party notices when redistributing. The AI-generated-code disclosure above remains applicable.
+
+The base model `nkthebass/tinybrainbot-10m-v2-base` also declares Apache-2.0; **it is not license-free**. The bundled modified/quantized model has separate scope and provenance described in [MODEL_LICENSE.md](MODEL_LICENSE.md).
+
+**Unrestricted/commercial clearance of the bundled model is unresolved.** In particular, current smol-smoltalk includes Explore-Instruct data whose upstream source declares CC-BY-NC-4.0 and research-only model use. The historical training runs did not record exact rows/revisions. WikiText, other mixtures and the base model's datasets also have their own terms; not every upstream permission could be verified. A permissive code license does not erase those obligations or automatically resolve how dataset terms apply to weights.
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the audit, source links, confirmed declarations and open issues, plus [docs/upstream-licenses.json](docs/upstream-licenses.json) for the pinned documentation snapshots. Missing licenses are not public-domain grants. Built APKs include the legal documents under `assets/legal/`. This is a technical provenance audit, not a legal clearance.
+
 ## Compatibility and limits
 
 - **Android 1.5 / API 3 minimum.** Android UI calls compile against 1.5 API stubs; Java 5 bytecode is converted to DEX 035.
@@ -74,6 +84,7 @@ These checks run from a checkout with the prerequisites above, without the origi
 
 ```sh
 python3 tests/smoke_test.py
+python3 tests/check_licenses.py
 ./build.sh
 python3 tests/check_apk.py
 ```
@@ -121,6 +132,9 @@ Old Android Unicode tables can differ from the host JVM for newer Unicode charac
 - `assets/model.bin`: committed int8 weights and tokenizer, bundled in the APK.
 - `assets/model.bin.sha256`: model checksum, verified before every build.
 - `tools/export_model.py`: deterministic HF safetensors exporter.
+- `LICENSE`, `NOTICE`, `MODEL_LICENSE.md`, `THIRD_PARTY_NOTICES.md`: code license, attribution, model scope and dataset audit; packaged in the APK.
+- `docs/upstream-licenses.json`: upstream audit revisions, declarations and current mixture statistics.
+- `licenses/`: retained third-party license text.
 - `tests/`: host reference and APK packaging checks.
 
 `Model` is stateful and must only be used by one worker at a time. To raise context/reply limits, change `CONTEXT`/`NEW_TOKENS` in `ChatActivity.java` and rebuild; context cannot exceed the checkpoint's 1024 positions, and KV memory grows linearly.

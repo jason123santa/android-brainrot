@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import org.brainrot.legacy.Model;
 import java.io.*;
 

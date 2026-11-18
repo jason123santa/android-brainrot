@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Exercise the bundled model on a host JVM using only Python's standard library."""
 import hashlib
 import os

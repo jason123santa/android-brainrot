@@ -1,0 +1,277 @@
+{
+  "audit_date": "2026-11-18",
+  "scope": "Published upstream declarations, not a legal clearance or proof of the historical training inputs. Null license means no license declaration verified, not public domain. Audited revisions are documentation snapshots, not pinned training revisions.",
+  "bundled_model_sha256": "d81dfe999cd400e31cfc9fb290860335b7a53b051f16f692b5f2e5b82949c3f8",
+  "sources": [
+    {
+      "id": "ArrowLabs/DCLM-Ultra-1.1",
+      "resolved_id": "ArrowLabs/DCLM-Ultra-1.1",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "9a79c39ec65eecf5df5979a54ff6e908f15b07fd",
+      "declared_card_license": "apache-2.0",
+      "card_url": "https://huggingface.co/datasets/ArrowLabs/DCLM-Ultra-1.1/blob/9a79c39ec65eecf5df5979a54ff6e908f15b07fd/README.md",
+      "card_sha256": "215a2d391c8ed8cbe2dc2ae0d89309ab4a0f4230a094f2785689842524dc1994"
+    },
+    {
+      "id": "ArrowLabs/DCLM-Ultra",
+      "resolved_id": "ArrowLabs/DCLM-Ultra",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "2da755e9df4a2ad22f56035782cb8c10339b9f49",
+      "declared_card_license": "apache-2.0",
+      "card_url": "https://huggingface.co/datasets/ArrowLabs/DCLM-Ultra/blob/2da755e9df4a2ad22f56035782cb8c10339b9f49/README.md",
+      "card_sha256": "346d7fe89b498aa0816730cf4e7492903912b5781ddea12ccccca4d85c06b878"
+    },
+    {
+      "id": "ChrisMcCormick/basic-arithmetic",
+      "resolved_id": "ChrisMcCormick/basic-arithmetic",
+      "kind": "dataset",
+      "role": "local-fine-tuning-data",
+      "audited_card_revision": "965dfb7f81fafa87191bcb6ffe49433e8ac4f4d5",
+      "declared_card_license": "mit",
+      "card_url": "https://huggingface.co/datasets/ChrisMcCormick/basic-arithmetic/blob/965dfb7f81fafa87191bcb6ffe49433e8ac4f4d5/README.md",
+      "card_sha256": "cf287fed0795c77b6581bb013bff165b362d50707a0b4680e5b75d7641e7964f"
+    },
+    {
+      "id": "HuggingFaceFW/fineweb-edu",
+      "resolved_id": "HuggingFaceFW/fineweb-edu",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9",
+      "declared_card_license": "odc-by",
+      "card_url": "https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu/blob/87f09149ef4734204d70ed1d046ddc9ca3f2b8f9/README.md",
+      "card_sha256": "a0cc8998a20499432b28b6575f3046b714938eb8e11b8d59a1d25ddf3716061e"
+    },
+    {
+      "id": "HuggingFaceTB/cosmopedia",
+      "resolved_id": "HuggingFaceTB/cosmopedia",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "0ae6ec63f91742bd2d1eaef4f02232c55d719385",
+      "declared_card_license": "apache-2.0",
+      "card_url": "https://huggingface.co/datasets/HuggingFaceTB/cosmopedia/blob/0ae6ec63f91742bd2d1eaef4f02232c55d719385/README.md",
+      "card_sha256": "73c533fd5f9471d1a4bd24192b026b34d4e799e19bc2240324b0043faa023f49"
+    },
+    {
+      "id": "HuggingFaceTB/everyday-conversations-llama3.1-2k",
+      "resolved_id": "HuggingFaceTB/everyday-conversations-llama3.1-2k",
+      "kind": "dataset",
+      "role": "current-smol-smoltalk-component",
+      "audited_card_revision": "14f543216b9ba42b6b951dc5bd199460d193b162",
+      "declared_card_license": "apache-2.0",
+      "card_url": "https://huggingface.co/datasets/HuggingFaceTB/everyday-conversations-llama3.1-2k/blob/14f543216b9ba42b6b951dc5bd199460d193b162/README.md",
+      "card_sha256": "7c0b4d4c9c8de6651d3646d91e92638d46beb67f867f7200a996b72f2611d95a"
+    },
+    {
+      "id": "HuggingFaceTB/smol-smoltalk",
+      "resolved_id": "HuggingFaceTB/smol-smoltalk",
+      "kind": "dataset",
+      "role": "local-fine-tuning-data",
+      "audited_card_revision": "f73fe857d519ff6ac5af2ea67c4d3834da7b8bcc",
+      "declared_card_license": "apache-2.0",
+      "card_url": "https://huggingface.co/datasets/HuggingFaceTB/smol-smoltalk/blob/f73fe857d519ff6ac5af2ea67c4d3834da7b8bcc/README.md",
+      "card_sha256": "4de8fe5ebb738a835f780332c35ec5a7dd1e8dae058308e7caa176dca6bbf808"
+    },
+    {
+      "id": "HuggingFaceTB/smoltalk",
+      "resolved_id": "HuggingFaceTB/smoltalk",
+      "kind": "dataset",
+      "role": "parent-of-local-fine-tuning-data",
+      "audited_card_revision": "5feaf2fd3ffca7c237fc38d1861bc30365d48ffa",
+      "declared_card_license": null,
+      "card_url": "https://huggingface.co/datasets/HuggingFaceTB/smoltalk/blob/5feaf2fd3ffca7c237fc38d1861bc30365d48ffa/README.md",
+      "card_sha256": "b6ff197df18e272fe15361db889638f9679b8443f299034137b5234acd8d3487"
+    },
+    {
+      "id": "Salesforce/wikitext",
+      "resolved_id": "Salesforce/wikitext",
+      "kind": "dataset",
+      "role": "local-fine-tuning-data",
+      "audited_card_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "declared_card_license": [
+        "cc-by-sa-3.0",
+        "gfdl"
+      ],
+      "card_url": "https://huggingface.co/datasets/Salesforce/wikitext/blob/b08601e04326c79dfdd32d625aee71d232d685c3/README.md",
+      "card_sha256": "d5aabf145d341366745ac703b5844c442c143943b6c77929481395c822b1c28c"
+    },
+    {
+      "id": "THUDM/LongAlign-10k",
+      "resolved_id": "zai-org/LongAlign-10k",
+      "kind": "dataset",
+      "role": "current-smol-smoltalk-component",
+      "audited_card_revision": "12f17c4baff1001f0d44c4f8feab09ee2ee8c6dc",
+      "declared_card_license": null,
+      "card_url": "https://huggingface.co/datasets/THUDM/LongAlign-10k/blob/12f17c4baff1001f0d44c4f8feab09ee2ee8c6dc/README.md",
+      "card_sha256": "61f809532f0b36df2601f4227138043a92eecfe1182c617caee50fbffd8bcded"
+    },
+    {
+      "id": "Wanfq/Explore_Instruct_Rewriting_32k",
+      "resolved_id": "Wanfq/Explore_Instruct_Rewriting_32k",
+      "kind": "dataset",
+      "role": "current-smol-smoltalk-component",
+      "audited_card_revision": "5cc041afbde1f2999a402869103b2a5fea50aeca",
+      "declared_card_license": "cc-by-nc-4.0",
+      "card_url": "https://huggingface.co/datasets/Wanfq/Explore_Instruct_Rewriting_32k/blob/5cc041afbde1f2999a402869103b2a5fea50aeca/README.md",
+      "card_sha256": "11d74b7b400b69d3a6fe58d146131a9d3b7ca1f2048445cf6bbcc9bd3c98155f"
+    },
+    {
+      "id": "bigcode/self-oss-instruct-sc2-exec-filter-50k",
+      "resolved_id": "bigcode/self-oss-instruct-sc2-exec-filter-50k",
+      "kind": "dataset",
+      "role": "current-smol-smoltalk-component",
+      "audited_card_revision": "356bb069eee815daa6e23e9a282eeefe1490ad44",
+      "declared_card_license": "odc-by",
+      "card_url": "https://huggingface.co/datasets/bigcode/self-oss-instruct-sc2-exec-filter-50k/blob/356bb069eee815daa6e23e9a282eeefe1490ad44/README.md",
+      "card_sha256": "21599c15086963e045f697ca56fe3eedbdb2240fe07b521d94dfb4ff4e7cd2a4"
+    },
+    {
+      "id": "gair-prox/DCLM-pro",
+      "resolved_id": "gair-prox/DCLM-pro",
+      "kind": "dataset",
+      "role": "ancestor-of-base-pretraining-data",
+      "audited_card_revision": "d42c7c4f8188a95d73c16b58482d886828ed4b78",
+      "declared_card_license": "odc-by",
+      "card_url": "https://huggingface.co/datasets/gair-prox/DCLM-pro/blob/d42c7c4f8188a95d73c16b58482d886828ed4b78/README.md",
+      "card_sha256": "7e61a05d70b9112c5d4cb4b5a7c74ae0321298f3761649b730fbcf6a50cd106c"
+    },
+    {
+      "id": "microsoft/orca-math-word-problems-200k",
+      "resolved_id": "microsoft/orca-math-word-problems-200k",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "29255d1770cc4eac66e5e7fa378cba542c026350",
+      "declared_card_license": "mit",
+      "card_url": "https://huggingface.co/datasets/microsoft/orca-math-word-problems-200k/blob/29255d1770cc4eac66e5e7fa378cba542c026350/README.md",
+      "card_sha256": "8bb74b7e56f580bc92850c70a2fa05365c0f355ebe76da74901e66ecc63b5b84"
+    },
+    {
+      "id": "mlfoundations/dclm-baseline-1.0",
+      "resolved_id": "mlfoundations/dclm-baseline-1.0",
+      "kind": "dataset",
+      "role": "ancestor-of-base-pretraining-data",
+      "audited_card_revision": "a3b142c183aebe5af344955ae20836eb34dcf69b",
+      "declared_card_license": "cc-by-4.0",
+      "card_url": "https://huggingface.co/datasets/mlfoundations/dclm-baseline-1.0/blob/a3b142c183aebe5af344955ae20836eb34dcf69b/README.md",
+      "card_sha256": "7836ae55a3a8decc25e1d5c15900f3b40e91a4d20f4d2bf4f048d86f1db2c4ff"
+    },
+    {
+      "id": "nkthebass/tinybrainbot-10m-v2-base",
+      "resolved_id": "nkthebass/tinybrainbot-10m-v2-base",
+      "kind": "model",
+      "role": "base-model",
+      "audited_card_revision": "617e0f06dfe57f3c519be75177bfd8ca8a715530",
+      "declared_card_license": "apache-2.0",
+      "card_url": "https://huggingface.co/nkthebass/tinybrainbot-10m-v2-base/blob/617e0f06dfe57f3c519be75177bfd8ca8a715530/README.md",
+      "card_sha256": "a9d89c199d940dff133f99b44628e02efa51ef5110ea4015fd5881e1aef2b869"
+    },
+    {
+      "id": "openbmb/UltraData-Math",
+      "resolved_id": "openbmb/UltraData-Math",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87",
+      "declared_card_license": "apache-2.0",
+      "card_url": "https://huggingface.co/datasets/openbmb/UltraData-Math/blob/fe10db8efd35597fd7fcff8ff576b5ec4ea5ff87/README.md",
+      "card_sha256": "651768fc42238d1a32daf9c1affdf895e59e17d781d5bd0b28b0715d1a2c8371"
+    },
+    {
+      "id": "roneneldan/TinyStories",
+      "resolved_id": "roneneldan/TinyStories",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "f54c09fd23315a6f9c86f9dc80f725de7d8f9c64",
+      "declared_card_license": "cdla-sharing-1.0",
+      "card_url": "https://huggingface.co/datasets/roneneldan/TinyStories/blob/f54c09fd23315a6f9c86f9dc80f725de7d8f9c64/README.md",
+      "card_sha256": "f67b71c3ffe761795b9428222444bfc1ec447d45cb13b00821b7e6c1ceecf7c5"
+    },
+    {
+      "id": "teknium/OpenHermes-2.5",
+      "resolved_id": "teknium/OpenHermes-2.5",
+      "kind": "dataset",
+      "role": "current-smol-smoltalk-component",
+      "audited_card_revision": "b82037821055c377bed0d495e72e46de3bc72e84",
+      "declared_card_license": null,
+      "card_url": "https://huggingface.co/datasets/teknium/OpenHermes-2.5/blob/b82037821055c377bed0d495e72e46de3bc72e84/README.md",
+      "card_sha256": "92fd711b9f0f6f8c7312d18d93ad412af415cd25a207584554c8e72c0cfe9f64"
+    },
+    {
+      "id": "wikimedia/wikipedia",
+      "resolved_id": "wikimedia/wikipedia",
+      "kind": "dataset",
+      "role": "base-model-declared-pretraining-data",
+      "audited_card_revision": "b04c8d1ceb2f5cd4588862100d08de323dccfbaa",
+      "declared_card_license": [
+        "cc-by-sa-3.0",
+        "gfdl"
+      ],
+      "card_url": "https://huggingface.co/datasets/wikimedia/wikipedia/blob/b04c8d1ceb2f5cd4588862100d08de323dccfbaa/README.md",
+      "card_sha256": "a0f2055ac612f924721e9981fa2a49a18adec1c67cc8026f6c97d12f17211b21"
+    }
+  ],
+  "current_smol_smoltalk_statistics": {
+    "url": "https://datasets-server.huggingface.co/statistics?dataset=HuggingFaceTB%2Fsmol-smoltalk&config=default&split=train",
+    "retrieved_on": "2026-11-18",
+    "partial": false,
+    "num_examples": 460341,
+    "source_frequencies": {
+      "explore-instruct-rewrite": 3017,
+      "everyday-conversations": 2252,
+      "openhermes-50k": 47492,
+      "smol-magpie-ultra-short": 270838,
+      "smollm-rewrite-30k": 26657,
+      "longalign": 3560,
+      "smol-summarize-5k": 4749,
+      "smol-summarize-20k": 19272,
+      "smol-contraints": 34433,
+      "self-oss-instruct": 48071
+    },
+    "response_sha256": "f0b6632ff003c61d14e8c967150175899bb2b28c6c3464f19352e7c0597a5943",
+    "caveat": "Current dataset statistics do not identify which rows or revision were used by the historical training runs."
+  },
+  "additional_evidence": [
+    {
+      "description": "Linked LongAlign code repository license; not a verified grant covering all dataset contents",
+      "url": "https://github.com/THUDM/LongAlign/blob/main/LICENSE",
+      "git_blob_sha": "bb9f67fa3a66c62bf8060437977cd6f02c5135bb",
+      "declared_license": "Apache-2.0",
+      "content_sha256": "0a33876aae9be9193b4ecafc254fecf2baa995108778fb89c96c87b30fe02ca7"
+    },
+    {
+      "description": "Linked LongAlign code repository README; not a verified grant covering all dataset contents",
+      "url": "https://github.com/THUDM/LongAlign/blob/main/README.md",
+      "git_blob_sha": "185fe9e5de5fe789316e4aa0f5b7e30f7fc31d7e",
+      "declared_license": null,
+      "content_sha256": "aba725b2bd47add5b3eb8630b31323d51a42521211189bda1343ef7b72e66e7e"
+    },
+    {
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "retrieved_content_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "url": "https://cdla.dev/sharing-1-0/",
+      "retrieved_content_sha256": "1f1238a39ee656ddbf2bac4e60a50add1000a6d99147c1da5414378a5afd9962"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/ODC-By-1.0.txt",
+      "retrieved_content_sha256": "b1c4de4bf91c95eec945ea7cbe0575fd52e7ee8fa430acb01d323d8214b1c482"
+    },
+    {
+      "url": "https://commoncrawl.org/terms-of-use",
+      "retrieved_content_sha256": "2ffa806b46ea97481beac2d16b556603fb122d6763850a2fbe575a4177191072"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openai/gpt-2/master/LICENSE",
+      "retrieved_content_sha256": "0dbeda4bc78823b1d67ec0ee414d8690ee4cad826bc9c147b215adc3af202436"
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/com/google/android/android/1.5_r4/android-1.5_r4.pom",
+      "retrieved_content_sha256": "d797bf61e9d9ed23c1b4a695f5caedda2d9c7d26baa418a8368fcaf4947d21c2"
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/com/google/android/tools/dx/1.7/dx-1.7.pom",
+      "retrieved_content_sha256": "3854791ace71cd6ec1bf022850a6c38d3b22c25c59901d7b7ad50d10e87f0f65"
+    }
+  ]
+}
