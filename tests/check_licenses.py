@@ -10,18 +10,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    # Only the project header and appendix attribution personalize the Apache text.
+    # Preserve the official Apache sections 1-9; personalize only the project notices.
     copyright_header = b'Copyright (c) 2026 jason123santa\nCopyright notice date: 11/18/2026\n'
     license_text = (ROOT / 'LICENSE').read_bytes()
     assert license_text.startswith(copyright_header)
-    template = b'   Copyright [yyyy] [name of copyright owner]\n'
-    attribution = b'   Copyright (c) 2026 jason123santa\n'
-    assert template not in license_text
+    assert b'[yyyy]' not in license_text and b'[name of copyright owner]' not in license_text
+    assert b'How to apply' not in license_text and b'attach the following' not in license_text
     body = license_text[len(copyright_header):]
-    assert body.count(attribution) == 1
-    canonical = body.replace(attribution, template, 1)
-    assert hashlib.sha256(canonical).hexdigest() == (
-        'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30')
+    end_marker = b'   END OF TERMS AND CONDITIONS\n'
+    terms, separator, notice = body.partition(end_marker)
+    assert separator == end_marker
+    assert hashlib.sha256(terms + separator).hexdigest() == (
+        '0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594')
+    assert b'APPENDIX: Project copyright and license notice.' in notice
+    assert b'Copyright (c) 2026 jason123santa' in notice
+    assert b'Licensed under the Apache License, Version 2.0' in notice
     project_notice = (ROOT / 'NOTICE').read_text(encoding='utf-8')
     assert 'Copyright (c) 2026 jason123santa' in project_notice
     assert 'Copyright notice date: 11/18/2026' in project_notice
