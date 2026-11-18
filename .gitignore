@@ -1,4 +1,4 @@
-# Generated outputs, dependencies and model files stay local.
+# Generated outputs, downloaded dependencies and original checkpoints stay local.
 build/
 dist/
 checkpoint/
@@ -6,6 +6,8 @@ model-checkpoint/
 __pycache__/
 *.pyc
 *.bin
+# The exported runtime model is required to build directly from a checkout.
+!/assets/model.bin
 *.safetensors
 *.gguf
 *.llamafile

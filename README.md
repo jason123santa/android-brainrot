@@ -6,7 +6,7 @@ Offline Android inference code for the `chat-model-10m-brainrot-v2` checkpoint.
 
 **This project's implementation, scripts, tests and documentation were generated with an AI coding assistant.** Human review and real-device testing are still required; AI-generated code may contain errors.
 
-This repository contains **source code only**. Model weights, APKs, downloaded build tools, signing keys and machine-local settings are intentionally excluded. Supply a compatible checkpoint locally and build the APK as described below. The resulting APK is `dist/brainrot-legacy-debug.apk` (about 9.7 MiB with the tested model).
+This repository includes **the Android source, build scripts, and the exported model/tokenizer** in `assets/model.bin`. You can build directly from a checkout; the original Hugging Face checkpoint is **not required**. APKs, downloaded build tools, signing keys and machine-local settings remain excluded. The resulting APK is `dist/brainrot-legacy-debug.apk` (about 9.7 MiB).
 
 ## Compatibility and limits
 
@@ -22,7 +22,7 @@ This repository contains **source code only**. Model weights, APKs, downloaded b
 
 ### Install
 
-Enable installation from unknown sources on the device, then sideload the APK or:
+After building, enable installation from unknown sources on the device, then sideload the APK or:
 
 ```sh
 adb install dist/brainrot-legacy-debug.apk
@@ -37,29 +37,30 @@ adb install --bypass-low-target-sdk-block dist/brainrot-legacy-debug.apk
 
 OEM policy, future Android versions, memory and the device's Dalvik/ART implementation may impose additional restrictions. This is a sideloaded legacy debug app, not a Play Store release. Its SHA-1/v1 signature is intentional for pre-2.3 compatibility and is not a recommended modern distribution scheme.
 
-## Rebuild
+## Build from a clean checkout
 
-From the repository root:
+Prerequisites on a Linux/Bash host:
+
+- **JDK 8 `javac`** (supports Java 1.5 source/target), plus `java`, `jarsigner` and `keytool`.
+- **`aapt`**, available as a Debian/Ubuntu system package or through compatible Android SDK Build Tools.
+- **Python 3**, `curl`, `sha256sum` and ordinary shell utilities. No third-party Python packages are needed for an APK build.
+- Network access on the first build to download two small, SHA-256-pinned Maven artifacts: Android 1.5 API stubs and dx 1.7. Later builds reuse the verified local cache.
+
+From the repository root, run:
 
 ```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install numpy safetensors
-
-# Put a compatible checkpoint in this ignored local directory first.
-python tools/export_model.py --source ./checkpoint
-
-# Downloads two small, SHA-256-pinned Maven artifacts (API 3 stubs and dx 1.7).
-./tools/fetch_toolchain.sh
-
-# Requires JDK 8 javac (supports -source/-target 1.5), java, aapt,
-# jarsigner, keytool and Python 3. No Gradle, Android Studio or NDK.
 ./build.sh
 ```
 
-The checkpoint directory must contain `config.json`, `tokenizer.json`, `tokenizer_config.json` and `model.safetensors`. The runtime deliberately supports the tested model configuration (256 hidden size, 704 intermediate size, 12 layers, 4 attention heads, 2 KV heads, 64 head dimension, tied embeddings and a 4096-token vocabulary), not arbitrary Llama checkpoints. Obtain the checkpoint separately and check its license before redistribution.
+The script automatically fetches/verifies the legacy tool JARs, checks the bundled model checksum, compiles the app, generates a local debug signing key, and writes **`dist/brainrot-legacy-debug.apk`**. It does not require the original checkpoint, PyTorch, NumPy, Transformers, Gradle, Android Studio or an NDK. The model is stored as a normal Git file, not a Git LFS pointer.
 
-On Debian/Ubuntu `aapt` is available as a system package; SDK Build Tools can also provide it. The build script does not install anything system-wide. If tools are not on PATH, override `JAVAC`, `JAVA`, `JARSIGNER`, `KEYTOOL`, `AAPT`, `ANDROID_JAR` and/or `DX_JAR` with full paths. In particular, use a JDK **8** `javac`, not JDK 17/21 (which removed target 1.5).
+To prefetch tools separately (for example before an offline build):
+
+```sh
+./tools/fetch_toolchain.sh
+```
+
+The build script does not install anything system-wide. If tools are not on PATH, override `JAVAC`, `JAVA`, `JARSIGNER`, `KEYTOOL`, `AAPT`, `ANDROID_JAR` and/or `DX_JAR` with your local tool locations. In particular, use a JDK **8** `javac`, not JDK 17/21 (which removed target 1.5). Custom Android/dx JAR overrides are your responsibility to provision and verify.
 
 The pinned Android Maven jar checks Android API references but excludes core Java stubs. Core Java calls have therefore also been kept to Java 5/Android 1.5-era APIs; no claim is made that host compilation alone verifies the entire old runtime.
 
@@ -69,15 +70,33 @@ The signing script narrowly overrides the Java process's JAR SHA-1 restriction f
 
 ## Verify
 
+These checks run from a checkout with the prerequisites above, without the original checkpoint or third-party Python packages:
+
 ```sh
-# Activate the virtual environment used above; provide the local reference model.
-python -m pip install torch transformers
-python tests/test_port.py --source ./checkpoint --java-source 5
-python tests/check_apk.py
+python3 tests/smoke_test.py
+./build.sh
+python3 tests/check_apk.py
 ```
+
+### Optional: re-export or compare with the original checkpoint
+
+The original HF checkpoint is needed **only** for exporting replacement weights or running the Hugging Face parity test, not for building the app. Put it in the ignored `checkpoint` directory and use a separate Python environment:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install numpy safetensors torch transformers
+
+# Optional: overwrites assets/model.bin and refreshes assets/model.bin.sha256.
+python tools/export_model.py --source ./checkpoint
+python tests/test_port.py --source ./checkpoint --java-source 5
+```
+
+The checkpoint directory must contain `config.json`, `tokenizer.json`, `tokenizer_config.json` and `model.safetensors`. The runtime deliberately supports the tested configuration (256 hidden size, 704 intermediate size, 12 layers, 4 attention heads, 2 KV heads, 64 head dimension, tied embeddings and a 4096-token vocabulary), not arbitrary Llama checkpoints. Check the applicable model license before redistributing replacement weights.
 
 Observed host results:
 
+- A clean source snapshot builds successfully using the bundled model, automatically downloaded tools and a newly generated debug key, without the original HF checkpoint or any existing local build files. The standalone runtime smoke test and APK checks pass from that snapshot.
 - 138 tokenizer fixtures (including Unicode, whitespace, digits, special tokens and seeded fuzz cases) match Hugging Face exactly.
 - Java incremental KV-cached inference versus the same int8-dequantized Hugging Face model: maximum absolute logit difference **0.000138**; all tested greedy token choices match.
 - Original float32 versus int8 reference logit RMS: **0.11385** on the test prompt; not a general quality benchmark.
@@ -99,7 +118,8 @@ Old Android Unicode tables can differ from the host JVM for newer Unicode charac
 - `src/org/brainrot/legacy/Model.java`: int8 matvecs, RMSNorm, split-half RoPE, grouped-query attention, causal KV cache, SwiGLU and sampling.
 - `src/org/brainrot/legacy/Tokenizer.java`: Digits + GPT-2 byte-level BPE.
 - `src/org/brainrot/legacy/ChatActivity.java`: API 3 UI, worker-thread loading/inference and cancellation.
-- `assets/model.bin`: locally generated weights and tokenizer bundled in the APK; not committed.
+- `assets/model.bin`: committed int8 weights and tokenizer, bundled in the APK.
+- `assets/model.bin.sha256`: model checksum, verified before every build.
 - `tools/export_model.py`: deterministic HF safetensors exporter.
 - `tests/`: host reference and APK packaging checks.
 

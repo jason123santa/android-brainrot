@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Requires JDK 8 javac, java, aapt, jarsigner, keytool, Python 3; no Gradle/NDK.
+# Requires JDK 8 javac, java, aapt, jarsigner, keytool, Python 3, curl and sha256sum.
+# Downloads pinned API stubs/dx on first build; no Gradle/NDK or HF checkpoint.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")" && pwd)
 BUILD="$ROOT/build/apk"
@@ -10,8 +11,17 @@ JAVA=${JAVA:-java}
 JARSIGNER=${JARSIGNER:-jarsigner}
 KEYTOOL=${KEYTOOL:-keytool}
 AAPT=${AAPT:-aapt}
-[[ -f "$ANDROID_JAR" && -f "$DX_JAR" ]] || { echo 'Run tools/fetch_toolchain.sh first' >&2; exit 1; }
-[[ -f "$ROOT/assets/model.bin" ]] || { echo 'Run tools/export_model.py first' >&2; exit 1; }
+for tool in "$JAVAC" "$JAVA" "$JARSIGNER" "$KEYTOOL" "$AAPT" python3 sha256sum; do
+    command -v "$tool" >/dev/null 2>&1 || { echo "Missing required build tool: $tool" >&2; exit 1; }
+done
+# Check cached default downloads as well as fetching missing ones.
+if [[ "$ANDROID_JAR" == "$ROOT/build/toolchain/android-1.5_r4.jar" ||
+      "$DX_JAR" == "$ROOT/build/toolchain/dx-1.7.jar" ]]; then
+    "$ROOT/tools/fetch_toolchain.sh"
+fi
+[[ -f "$ANDROID_JAR" && -f "$DX_JAR" ]] || { echo 'Configured Android or dx JAR is missing' >&2; exit 1; }
+[[ -f "$ROOT/assets/model.bin" ]] || { echo 'Bundled assets/model.bin is missing; restore it from Git or export a compatible checkpoint' >&2; exit 1; }
+(cd "$ROOT/assets" && sha256sum --check model.bin.sha256)
 mkdir -p "$BUILD/classes" "$ROOT/dist"
 # Do not leave stale classes in an incremental build.
 find "$BUILD/classes" -type f -delete

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Export the local HF Llama to the dependency-free Java runtime format."""
 import argparse
+import hashlib
 import json
 import struct
 from pathlib import Path
@@ -81,6 +82,9 @@ def export(source, destination):
             for name in ('gate_proj', 'up_proj', 'down_proj'):
                 matrix(prefix + 'mlp.' + name + '.weight')
         floats(tensors.get_tensor('model.norm.weight'))
+    checksum = hashlib.sha256(destination.read_bytes()).hexdigest()
+    destination.with_suffix(destination.suffix + '.sha256').write_text(
+        '%s  %s\n' % (checksum, destination.name), encoding='ascii')
     print('%s: %.2f MiB, signed int8 rows + float32 scales' %
           (destination.name, destination.stat().st_size / 2**20))
 
