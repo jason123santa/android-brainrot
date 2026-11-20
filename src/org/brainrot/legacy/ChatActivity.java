@@ -34,7 +34,7 @@ public final class ChatActivity extends Activity {
     private boolean statusIsError;
     private static final int CONTEXT = 128, NEW_TOKENS = 32;
     private static final String WELCOME_TEXT = "Send a short message to start. Replies are generated offline.\nEach message starts a fresh context.\n";
-    private static final String READY_STATUS = "Ready - 128-token context, 32-token replies. CPU only.";
+    private static final String READY_STATUS = "Ready";
 
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);

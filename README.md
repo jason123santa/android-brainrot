@@ -18,14 +18,14 @@ The base model `nkthebass/tinybrainbot-10m-v2-base` also declares Apache-2.0; **
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the audit, source links, confirmed declarations and open issues, plus [docs/upstream-licenses.json](docs/upstream-licenses.json) for the pinned documentation snapshots. Missing licenses are not public-domain grants. Built APKs include the legal documents under `assets/legal/`. This is a technical provenance audit, not a legal clearance.
 
-## Native UI, full text and top bars (v1.3)
+## Native UI, full text and top bars (v1.4)
 
 There is still **one APK**. **Minimum SDK is API 3; target SDK is now API 4.** That small target change removes Android's implied phone/storage permissions without raising the supported Android version or Java API boundary. The built APK has **zero requested or implied permissions**: no phone, account, storage or network access is requested. The model, inference engine, Java bytecode, DEX format and CPU support are unchanged.
 
 - **Platform-native widgets throughout:** unskinned Android buttons, editor, text and scrolling. The native title/action bar is restored, and themes explicitly keep the system status bar visible. No custom button backgrounds, colors, fonts or fixed widget minimums; no duplicate hand-drawn app title. Pressed/focused/disabled states come from the OS.
 - Native classic theme on old Android, native Holo on API 11–13, and device/OEM-default themes on API 14+. Light/night variants use platform theme resources rather than custom palettes. Appearance can legitimately differ across Android versions and manufacturers.
 - Reduced spacing on small screens without shrinking the user's text size. On narrow, sufficiently tall windows the editor gets its own full-width row; on short keyboard/landscape windows the composer stays inline, caps visible editor lines and hides optional status text.
-- Full earlier welcome, loading, ready, thinking and editor-hint wording is restored. Status text wraps without a line cap or ellipsis. Optional non-error status can still hide while the keyboard leaves very little space; errors remain inline.
+- The ready indicator says only **Ready**, without token counts or CPU details. Full welcome, loading, thinking and editor-hint wording is retained; inference limits are unchanged. Status text wraps without a line cap or ellipsis. Optional non-error status can still hide while the keyboard leaves very little space; errors remain inline.
 - Explicit keyboard resizing; the keyboard hides on Send. Keyboards that honor the IME flag avoid the full-screen landscape editor. There are **no app-owned startup warning dialogs or Toast popups**; failures are reported as full inline status text.
 - Density awareness, all screen sizes and newer resizable/unrestricted-aspect declarations are retained. Older systems ignore declarations they do not implement.
 - Output follows the bottom only when you are already near it. Draft/transcript restoration is retained; interrupted replies are labeled, not silently restarted.
@@ -140,7 +140,7 @@ Old Android Unicode tables can differ from the host JVM for newer Unicode charac
 2. Confirm model loading completes without an out-of-memory or verification error.
 3. Send `hello`; wait for model-generated output, then try another short prompt.
 4. Test the Send/Stop action during prefill and generation, rotation, Back/relaunch, state restoration and an overlong message.
-5. On phones/tablets, check small/narrow/tall screens, portrait/landscape, keyboard open/closed, large fonts, native light/night themes, composer stacking, manual scrolling and readable error feedback. Verify the installed v1.3 build does not request Phone/Storage access and restores the native top bars and full inline wording. OEM compatibility overrides may still affect display behavior.
+5. On phones/tablets, check small/narrow/tall screens, portrait/landscape, keyboard open/closed, large fonts, native light/night themes, composer stacking, manual scrolling and readable error feedback. Verify the installed v1.4 build does not request Phone/Storage access and restores the native top bars and full inline wording. OEM compatibility overrides may still affect display behavior.
 6. Measure peak app heap, token latency and battery use before calling a particular device supported.
 
 ## Files

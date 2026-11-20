@@ -31,7 +31,8 @@ def main():
         assert custom_style not in activity, 'Custom widget styling was reintroduced'
     assert 'send.setPadding(' not in activity and 'input.setPadding(' not in activity
     assert 'TextAppearance_Small' in activity and 'TextAppearance_Medium' in activity
-    for full_text in ['Loading offline model...', 'Ready - 128-token context, 32-token replies. CPU only.',
+    assert 'private static final String READY_STATUS = "Ready";' in activity
+    for full_text in ['Loading offline model...',
                       'Send a short message to start. Replies are generated offline.',
                       'Each message starts a fresh context.', 'Message (short prompts work best)',
                       'Thinking... Old CPUs may take a long time. Stop cancels.']:
