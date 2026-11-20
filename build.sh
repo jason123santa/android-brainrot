@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 # Requires JDK 8 javac, java, aapt, jarsigner, keytool, Python 3, curl and sha256sum.
-# Downloads pinned API stubs/dx on first build; no Gradle/NDK or HF checkpoint.
+# Downloads pinned API 3 stubs, dx and a manifest-only framework; no Gradle/NDK or HF checkpoint.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")" && pwd)
 BUILD="$ROOT/build/apk"
 ANDROID_JAR=${ANDROID_JAR:-"$ROOT/build/toolchain/android-1.5_r4.jar"}
+# Only AAPT sees this newer framework; javac must continue to use API 3 stubs.
+MANIFEST_ANDROID_JAR=${MANIFEST_ANDROID_JAR:-"$ROOT/build/toolchain/android-26.jar"}
 DX_JAR=${DX_JAR:-"$ROOT/build/toolchain/dx-1.7.jar"}
 JAVAC=${JAVAC:-javac}
 JAVA=${JAVA:-java}
@@ -17,10 +19,11 @@ for tool in "$JAVAC" "$JAVA" "$JARSIGNER" "$KEYTOOL" "$AAPT" python3 sha256sum; 
 done
 # Check cached default downloads as well as fetching missing ones.
 if [[ "$ANDROID_JAR" == "$ROOT/build/toolchain/android-1.5_r4.jar" ||
+      "$MANIFEST_ANDROID_JAR" == "$ROOT/build/toolchain/android-26.jar" ||
       "$DX_JAR" == "$ROOT/build/toolchain/dx-1.7.jar" ]]; then
     "$ROOT/tools/fetch_toolchain.sh"
 fi
-[[ -f "$ANDROID_JAR" && -f "$DX_JAR" ]] || { echo 'Configured Android or dx JAR is missing' >&2; exit 1; }
+[[ -f "$ANDROID_JAR" && -f "$MANIFEST_ANDROID_JAR" && -f "$DX_JAR" ]] || { echo 'Configured Android, manifest or dx JAR is missing' >&2; exit 1; }
 [[ -f "$ROOT/assets/model.bin" ]] || { echo 'Bundled assets/model.bin is missing; restore it from Git or export a compatible checkpoint' >&2; exit 1; }
 (cd "$ROOT/assets" && sha256sum --check model.bin.sha256)
 mkdir -p "$BUILD/classes" "$ROOT/dist"
@@ -35,7 +38,7 @@ import sys
 with open(sys.argv[1], 'rb') as f:
     assert f.read(8) == b'dex\n035\x00', 'DEX format must be 035'
 PY
-"$AAPT" package -f -M "$ROOT/AndroidManifest.xml" -I "$ANDROID_JAR" \
+"$AAPT" package -f -M "$ROOT/AndroidManifest.xml" -I "$MANIFEST_ANDROID_JAR" \
     -A "$ROOT/assets" -0 bin -F "$BUILD/unsigned.apk"
 # Keep readable licenses, attribution and modification notices with the model/APK.
 mkdir -p "$BUILD/assets/legal/licenses"

@@ -18,6 +18,18 @@ The base model `nkthebass/tinybrainbot-10m-v2-base` also declares Apache-2.0; **
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the audit, source links, confirmed declarations and open issues, plus [docs/upstream-licenses.json](docs/upstream-licenses.json) for the pinned documentation snapshots. Missing licenses are not public-domain grants. Built APKs include the legal documents under `assets/legal/`. This is a technical provenance audit, not a legal clearance.
 
+## UI update (v1.1)
+
+There is still **one APK**. The inference engine, model, API 3 minimum, old target SDK and CPU support are unchanged. The layout now declares density awareness and all screen sizes instead of asking newer Android versions to use fixed legacy-screen scaling. Newer systems also receive resizable-activity/unrestricted-aspect-ratio declarations; older systems ignore declarations they do not implement.
+
+- Compact message row with a **Send / Stop** button and 48 dp minimum touch target.
+- Readable light colors, scalable text and flexible chat space on phones/tablets. The header/composer compact automatically when the available height is small, including landscape keyboards, multi-window and larger font settings.
+- Explicit keyboard resizing; the keyboard hides when a message is sent. Keyboards that honor the IME flag avoid the full-screen landscape editor.
+- Output follows the bottom only when you are already near it, rather than pulling you away from earlier messages.
+- Draft/transcript restoration after Activity recreation; interrupted replies are labeled, not silently restarted.
+
+Code compiles against the Android 1.5 API stubs and APK screen/keyboard declarations pass automated checks. **No Android device or emulator was available for visual validation**, so this is not a claim that every OEM layout, keyboard, font size or old-device runtime has been verified. The target SDK has not been raised: modern installation warnings/blocks described below still apply.
+
 ## Compatibility and limits
 
 - **Android 1.5 / API 3 minimum.** Android UI calls compile against 1.5 API stubs; Java 5 bytecode is converted to DEX 035.
@@ -54,7 +66,7 @@ Prerequisites on a Linux/Bash host:
 - **JDK 8 `javac`** (supports Java 1.5 source/target), plus `java`, `jarsigner` and `keytool`.
 - **`aapt`**, available as a Debian/Ubuntu system package or through compatible Android SDK Build Tools.
 - **Python 3**, `curl`, `sha256sum` and ordinary shell utilities. No third-party Python packages are needed for an APK build.
-- Network access on the first build to download two small, SHA-256-pinned Maven artifacts: Android 1.5 API stubs and dx 1.7. Later builds reuse the verified local cache.
+- Network access on the first build for SHA-256-pinned Android 1.5 API stubs, dx 1.7, and the Google SDK Platform 26 archive (about 61 MiB). Only `android.jar` is extracted from that archive for manifest resource IDs. Later builds reuse the verified local cache.
 
 From the repository root, run:
 
@@ -62,7 +74,7 @@ From the repository root, run:
 ./build.sh
 ```
 
-The script automatically fetches/verifies the legacy tool JARs, checks the bundled model checksum, compiles the app, generates a local debug signing key, and writes **`dist/brainrot-legacy-debug.apk`**. It does not require the original checkpoint, PyTorch, NumPy, Transformers, Gradle, Android Studio or an NDK. The model is stored as a normal Git file, not a Git LFS pointer.
+The script automatically fetches/verifies the legacy tool JARs and manifest framework, checks the bundled model checksum, compiles the app, generates a local debug signing key, and writes **`dist/brainrot-legacy-debug.apk`**. It does not require the original checkpoint, PyTorch, NumPy, Transformers, Gradle, Android Studio or an NDK. The model is stored as a normal Git file, not a Git LFS pointer.
 
 To prefetch tools separately (for example before an offline build):
 
@@ -70,7 +82,9 @@ To prefetch tools separately (for example before an offline build):
 ./tools/fetch_toolchain.sh
 ```
 
-The build script does not install anything system-wide. If tools are not on PATH, override `JAVAC`, `JAVA`, `JARSIGNER`, `KEYTOOL`, `AAPT`, `ANDROID_JAR` and/or `DX_JAR` with your local tool locations. In particular, use a JDK **8** `javac`, not JDK 17/21 (which removed target 1.5). Custom Android/dx JAR overrides are your responsibility to provision and verify.
+The build script does not install anything system-wide. If tools are not on PATH, override `JAVAC`, `JAVA`, `JARSIGNER`, `KEYTOOL`, `AAPT`, `ANDROID_JAR`, `MANIFEST_ANDROID_JAR` and/or `DX_JAR` with your local tool locations. In particular, use a JDK **8** `javac`, not JDK 17/21 (which removed target 1.5). Custom Android/dx JAR overrides are your responsibility to provision and verify. Keep `ANDROID_JAR` pointed at API 3 to preserve the Java API boundary; `MANIFEST_ANDROID_JAR` needs API 26 or later for the screen-related declarations.
+
+Java still compiles **only against the pinned Android 1.5 Maven jar**. AAPT separately uses SDK Platform 26 to encode newer manifest attributes; this does not raise `minSdkVersion`, `targetSdkVersion`, Java bytecode or the DEX version. The framework JAR is neither compiled into the app nor bundled in it. The downloaded SDK platform remains subject to the [Android SDK terms](https://developer.android.com/studio/terms).
 
 The pinned Android Maven jar checks Android API references but excludes core Java stubs. Core Java calls have therefore also been kept to Java 5/Android 1.5-era APIs; no claim is made that host compilation alone verifies the entire old runtime.
 
@@ -112,7 +126,7 @@ Observed host results:
 - Java incremental KV-cached inference versus the same int8-dequantized Hugging Face model: maximum absolute logit difference **0.000138**; all tested greedy token choices match.
 - Original float32 versus int8 reference logit RMS: **0.11385** on the test prompt; not a general quality benchmark.
 - Cache reset, generation smoke test, prompt bounds and thread cancellation pass under `java -Xmx16m`.
-- APK checks validate DEX 035 integrity, API 3 manifest, absence of native libraries, uncompressed bundled weights and legacy JAR signature metadata. `build.sh` also verifies the cryptographic JAR signature.
+- APK checks validate DEX 035 integrity, API 3 minimum, density/all-screen support, keyboard-resize/resizable-activity declarations, absence of native libraries, uncompressed bundled weights and legacy JAR signature metadata. `build.sh` also verifies the cryptographic JAR signature.
 
 Old Android Unicode tables can differ from the host JVM for newer Unicode characters. Device-side tokenizer/inference and lifecycle testing is still required.
 
@@ -121,8 +135,9 @@ Old Android Unicode tables can differ from the host JVM for newer Unicode charac
 1. Install and launch on actual API 3 ARMv5 and on a working MIPS Android system.
 2. Confirm model loading completes without an out-of-memory or verification error.
 3. Send `hello`; wait for model-generated output, then try another short prompt.
-4. Test Stop during prefill and reply generation, rotation, Back/relaunch and an overlong message.
-5. Measure peak app heap, token latency and battery use before calling a particular device supported.
+4. Test the Send/Stop action during prefill and generation, rotation, Back/relaunch, state restoration and an overlong message.
+5. On modern phones/tablets, check tall screens, high density, portrait/landscape, keyboard open/closed, large font settings and manual scrolling while tokens arrive. OEM compatibility overrides may still affect display behavior.
+6. Measure peak app heap, token latency and battery use before calling a particular device supported.
 
 ## Files
 

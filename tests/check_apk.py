@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Check legacy packaging invariants; not a substitute for device testing."""
 import hashlib
+import os
 import struct
 import subprocess
 import xml.etree.ElementTree as ET
@@ -33,8 +34,24 @@ android = '{http://schemas.android.com/apk/res/android}'
 assert manifest.find('uses-sdk').get(android + 'minSdkVersion') == '3'
 assert manifest.find('uses-sdk').get(android + 'maxSdkVersion') is None
 assert not manifest.findall('uses-permission')
-compiled_manifest = subprocess.check_output(['aapt', 'dump', 'xmltree', str(APK), 'AndroidManifest.xml'], text=True)
+screens = manifest.find('supports-screens')
+assert screens is not None
+for attribute in ['smallScreens', 'normalScreens', 'largeScreens', 'xlargeScreens', 'anyDensity', 'resizeable']:
+    assert screens.get(android + attribute) == 'true'
+activity = manifest.find('application/activity')
+assert activity.get(android + 'windowSoftInputMode') == 'adjustResize|stateAlwaysHidden'
+assert activity.get(android + 'resizeableActivity') == 'true'
+assert activity.get(android + 'maxAspectRatio') == '0.0'
+aapt = os.environ.get('AAPT', 'aapt')
+compiled_manifest = subprocess.check_output([aapt, 'dump', 'xmltree', str(APK), 'AndroidManifest.xml'], text=True)
 assert 'android:minSdkVersion' in compiled_manifest and '(type 0x10)0x3' in compiled_manifest
 assert 'E: uses-permission' not in compiled_manifest
-print('PASS: API 3 manifest, DEX 035 integrity, no native ABI restriction, uncompressed model, SHA-1 JAR signature, bundled legal notices')
+assert 'android:windowSoftInputMode' in compiled_manifest and '(type 0x11)0x13' in compiled_manifest
+assert 'android:resizeableActivity' in compiled_manifest and 'android:maxAspectRatio' in compiled_manifest
+badging = subprocess.check_output([aapt, 'dump', 'badging', str(APK)], text=True)
+assert "supports-any-density: 'true'" in badging
+screen_line = next(line for line in badging.splitlines() if line.startswith('supports-screens:'))
+for size in ['small', 'normal', 'large', 'xlarge']:
+    assert "'" + size + "'" in screen_line
+print('PASS: API 3 minimum, DEX 035 integrity, no native ABI restriction, model/signature/notices, density/screen/keyboard declarations')
 print('APK SHA-256:', hashlib.sha256(APK.read_bytes()).hexdigest())
