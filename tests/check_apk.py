@@ -16,6 +16,7 @@ with zipfile.ZipFile(APK) as apk:
     names = apk.namelist()
     assert not any(name.startswith('lib/') or name.endswith('.so') for name in names)
     assert [name for name in names if name.endswith('.dex')] == ['classes.dex']
+    assert 'resources.arsc' in names, 'Native theme resources must be bundled'
     dex = apk.read('classes.dex')
     assert dex[:8] == b'dex\n035\x00'
     assert dex[12:32] == hashlib.sha1(dex[32:]).digest()
@@ -32,8 +33,10 @@ with zipfile.ZipFile(APK) as apk:
 manifest = ET.parse(ROOT / 'AndroidManifest.xml').getroot()
 android = '{http://schemas.android.com/apk/res/android}'
 assert manifest.find('uses-sdk').get(android + 'minSdkVersion') == '3'
+assert manifest.find('uses-sdk').get(android + 'targetSdkVersion') == '4'
 assert manifest.find('uses-sdk').get(android + 'maxSdkVersion') is None
 assert not manifest.findall('uses-permission')
+assert manifest.find('application').get(android + 'theme') == '@style/AppTheme'
 screens = manifest.find('supports-screens')
 assert screens is not None
 for attribute in ['smallScreens', 'normalScreens', 'largeScreens', 'xlargeScreens', 'anyDensity', 'resizeable']:
@@ -49,9 +52,16 @@ assert 'E: uses-permission' not in compiled_manifest
 assert 'android:windowSoftInputMode' in compiled_manifest and '(type 0x11)0x13' in compiled_manifest
 assert 'android:resizeableActivity' in compiled_manifest and 'android:maxAspectRatio' in compiled_manifest
 badging = subprocess.check_output([aapt, 'dump', 'badging', str(APK)], text=True)
+assert "sdkVersion:'3'" in badging and "targetSdkVersion:'4'" in badging
+assert not any(line.startswith(('uses-permission:', 'uses-implied-permission:'))
+               for line in badging.splitlines()), 'APK must not declare or imply any permissions'
 assert "supports-any-density: 'true'" in badging
 screen_line = next(line for line in badging.splitlines() if line.startswith('supports-screens:'))
 for size in ['small', 'normal', 'large', 'xlarge']:
     assert "'" + size + "'" in screen_line
-print('PASS: API 3 minimum, DEX 035 integrity, no native ABI restriction, model/signature/notices, density/screen/keyboard declarations')
+resources = subprocess.check_output([aapt, 'dump', '--values', 'resources', str(APK)], text=True)
+assert 'style/AppTheme' in resources
+for config in ['(default)', 'v11', 'night-v11', 'v14', 'night-v14']:
+    assert 'config ' + config + ':' in resources, 'Missing native theme configuration: ' + config
+print('PASS: API 3 minimum/API 4 target, zero requested/implied permissions, native themes, DEX 035, model/signature/notices and screen declarations')
 print('APK SHA-256:', hashlib.sha256(APK.read_bytes()).hexdigest())

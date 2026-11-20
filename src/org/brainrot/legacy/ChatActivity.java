@@ -2,9 +2,6 @@
 package org.brainrot.legacy;
 
 import android.app.Activity;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputFilter;
@@ -19,6 +16,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 import java.io.InputStream;
 
 /** API 3-only UI. All model loading and inference stay off the main thread. */
@@ -29,8 +27,11 @@ public final class ChatActivity extends Activity {
     private Thread worker;
     private EditText input;
     private Button send;
-    private TextView title, status, transcript;
+    private TextView status, transcript;
     private ScrollView scroll;
+    private LinearLayout composer;
+    private LinearLayout.LayoutParams chatSize;
+    private UiLayout layoutPolicy;
     private static final int CONTEXT = 128, NEW_TOKENS = 32;
 
     public void onCreate(Bundle savedState) {
@@ -38,65 +39,46 @@ public final class ChatActivity extends Activity {
         LinearLayout root = new LinearLayout(this) {
             protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
                 super.onSizeChanged(width, height, oldWidth, oldHeight);
-                if (title == null || status == null || input == null) return;
-                // Use the actual available height (including IME/multi-window resizing)
-                // and account for larger font settings, without newer display APIs.
-                float textScale = getResources().getDisplayMetrics().scaledDensity;
-                boolean compact = height < 280 * textScale;
-                boolean veryCompact = height < 180 * textScale;
-                title.setVisibility(compact ? View.GONE : View.VISIBLE);
-                status.setVisibility(veryCompact ? View.GONE : View.VISIBLE);
-                status.setMaxLines(compact ? 1 : 3);
-                input.setMaxLines(veryCompact ? 1 : (compact ? 2 : 3));
+                if (status == null || input == null || send == null || composer == null) return;
+                ChatActivity.this.applyUiLayout(this, UiLayout.forWindow(width, height,
+                    getResources().getDisplayMetrics().density,
+                    getResources().getDisplayMetrics().scaledDensity));
             }
         };
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(12), dp(8), dp(12), dp(8));
-        root.setBackgroundColor(0xfff3f5f7);
-        // Do not focus the editor/open the keyboard automatically on launch.
+        root.setPadding(dp(4), dp(4), dp(4), dp(4));
+        // Native window/theme provides the background, fonts and colors.
+        // Avoid an extra in-app title that takes space from small screens.
         root.setFocusableInTouchMode(true);
-        title = new TextView(this);
-        title.setText("Brainrot 10M");
-        title.setTextSize(20);
-        title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setTextColor(0xff17212b);
-        root.addView(title, new LinearLayout.LayoutParams(-1, -2));
         status = new TextView(this);
-        status.setTextSize(14);
-        status.setTextColor(0xff455a64);
-        status.setMaxLines(3);
-        status.setText("Loading offline model...");
+        status.setTextAppearance(this, android.R.style.TextAppearance_Small);
+        status.setMaxLines(2);
+        status.setText("Loading model...");
         root.addView(status, new LinearLayout.LayoutParams(-1, -2));
         scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         scroll.setSmoothScrollingEnabled(false);
-        scroll.setBackgroundColor(0xffffffff);
         transcript = new TextView(this);
-        transcript.setTextSize(16);
-        transcript.setTextColor(0xff17212b);
-        transcript.setPadding(dp(12), dp(10), dp(12), dp(10));
+        transcript.setTextAppearance(this, android.R.style.TextAppearance_Medium);
+        transcript.setPadding(dp(4), dp(4), dp(4), dp(4));
         transcript.setGravity(Gravity.TOP | Gravity.LEFT);
-        transcript.setLineSpacing(dp(2), 1.0f);
         String previous = savedState == null ? null : savedState.getString("transcript");
-        if (previous == null) previous = "Send a short message to start. Replies are generated offline.\nEach message starts a fresh context.\n";
+        if (previous == null) previous = "Offline chat. Keep messages short; each starts fresh.\n";
         if (savedState != null && savedState.getBoolean("generating"))
             previous += "\n[The previous reply stopped when the screen was recreated.]\n";
         transcript.setText(previous);
         scroll.addView(transcript, new ScrollView.LayoutParams(-1, -2));
-        LinearLayout.LayoutParams chatSize = new LinearLayout.LayoutParams(-1, 0, 1);
-        chatSize.topMargin = dp(8); chatSize.bottomMargin = dp(8);
+        chatSize = new LinearLayout.LayoutParams(-1, 0, 1);
+        chatSize.topMargin = dp(2); chatSize.bottomMargin = dp(2);
         root.addView(scroll, chatSize);
-        // One compact composer row leaves room for chat above the software keyboard.
-        LinearLayout composer = new LinearLayout(this);
+        // Native controls keep their own padding, state drawables and minimum sizes.
+        composer = new LinearLayout(this);
         composer.setGravity(Gravity.BOTTOM);
         input = new EditText(this);
         input.setHint("Message");
-        input.setTextSize(16);
-        input.setTextColor(0xff17212b);
-        input.setHintTextColor(0xff607d8b);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE |
                            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        input.setMinLines(1); input.setMaxLines(3); input.setMinHeight(dp(48));
+        input.setMinLines(1); input.setMaxLines(2);
         input.setGravity(Gravity.TOP | Gravity.LEFT);
         input.setImeOptions(EditorInfo.IME_ACTION_SEND | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         input.setFilters(new InputFilter[] {new InputFilter.LengthFilter(512)});
@@ -105,18 +87,10 @@ public final class ChatActivity extends Activity {
         input.setEnabled(false);
         composer.addView(input, new LinearLayout.LayoutParams(0, -2, 1));
         send = new Button(this);
-        send.setText("Send"); send.setTextSize(16); send.setTextColor(0xffffffff);
-        send.setMinWidth(dp(72)); send.setMinHeight(dp(48));
-        send.setPadding(dp(12), dp(8), dp(12), dp(8));
-        StateListDrawable buttonBackground = new StateListDrawable();
-        buttonBackground.addState(new int[] {-android.R.attr.state_enabled}, rounded(0xff607d8b));
-        buttonBackground.addState(new int[] {android.R.attr.state_pressed}, rounded(0xff0d47a1));
-        buttonBackground.addState(new int[] {android.R.attr.state_focused}, rounded(0xff0d47a1));
-        buttonBackground.addState(new int[0], rounded(0xff1565c0));
-        send.setBackgroundDrawable(buttonBackground);
+        send.setText("Send");
         send.setEnabled(false);
         LinearLayout.LayoutParams actionSize = new LinearLayout.LayoutParams(-2, -2);
-        actionSize.leftMargin = dp(8);
+        actionSize.leftMargin = dp(2);
         composer.addView(send, actionSize);
         root.addView(composer, new LinearLayout.LayoutParams(-1, -2));
         setContentView(root);
@@ -124,7 +98,7 @@ public final class ChatActivity extends Activity {
             public void onClick(View view) {
                 if (worker != null) {
                     worker.interrupt(); status.setText("Stopping...");
-                    send.setText("Stopping..."); send.setEnabled(false);
+                    send.setEnabled(false);
                 } else beginGeneration();
             }
         });
@@ -144,7 +118,7 @@ public final class ChatActivity extends Activity {
                         public void run() {
                             model = loaded; worker = null;
                             input.setEnabled(true); send.setEnabled(true);
-                            status.setText("Ready - 128-token context, 32-token replies. CPU only.");
+                            status.setText("Ready (offline)");
                         }
                     });
                 } catch (Exception e) { failure("Could not load model: " + e.toString(), true); }
@@ -158,10 +132,27 @@ public final class ChatActivity extends Activity {
         return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
-    private GradientDrawable rounded(int color) {
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setColor(color); drawable.setCornerRadius(dp(6));
-        return drawable;
+    private void applyUiLayout(LinearLayout root, UiLayout policy) {
+        if (policy.sameAs(layoutPolicy)) return;
+        layoutPolicy = policy;
+        int padding = dp(policy.paddingDp);
+        root.setPadding(padding, padding, padding, padding);
+        int chatPadding = dp(policy.chatPaddingDp);
+        transcript.setPadding(chatPadding, chatPadding, chatPadding, chatPadding);
+        status.setVisibility(policy.showStatus ? View.VISIBLE : View.GONE);
+        status.setMaxLines(policy.statusLines);
+        input.setMaxLines(policy.inputLines);
+        chatSize.topMargin = dp(policy.gapDp); chatSize.bottomMargin = dp(policy.gapDp);
+        scroll.setLayoutParams(chatSize);
+        composer.setOrientation(policy.stackedComposer ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+        composer.setGravity(policy.stackedComposer ? Gravity.RIGHT : Gravity.BOTTOM);
+        input.setLayoutParams(new LinearLayout.LayoutParams(policy.stackedComposer ? -1 : 0, -2,
+                              policy.stackedComposer ? 0 : 1));
+        LinearLayout.LayoutParams actionSize = new LinearLayout.LayoutParams(-2, -2);
+        actionSize.gravity = policy.stackedComposer ? Gravity.RIGHT : Gravity.BOTTOM;
+        actionSize.leftMargin = policy.stackedComposer ? 0 : dp(policy.gapDp);
+        actionSize.topMargin = policy.stackedComposer ? dp(policy.gapDp) : 0;
+        send.setLayoutParams(actionSize);
     }
 
     private void updateTranscript(String text, boolean forceBottom) {
@@ -193,7 +184,7 @@ public final class ChatActivity extends Activity {
         InputMethodManager keyboard = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         if (keyboard != null) keyboard.hideSoftInputFromWindow(input.getWindowToken(), 0);
         send.setText("Stop"); send.setEnabled(true); input.setEnabled(false);
-        status.setText("Thinking... Tap Stop to cancel.");
+        status.setText("Thinking...");
         worker = new Thread(new Runnable() {
             public void run() {
                 try {
@@ -227,6 +218,9 @@ public final class ChatActivity extends Activity {
             public void run() {
                 if (fatal) model = null;
                 finishWork(message);
+                // Native feedback stays visible even if a tiny keyboard window hides status.
+                if (!"Stopped".equals(message))
+                    Toast.makeText(ChatActivity.this, message, Toast.LENGTH_LONG).show();
             }
         });
     }

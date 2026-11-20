@@ -18,21 +18,22 @@ The base model `nkthebass/tinybrainbot-10m-v2-base` also declares Apache-2.0; **
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the audit, source links, confirmed declarations and open issues, plus [docs/upstream-licenses.json](docs/upstream-licenses.json) for the pinned documentation snapshots. Missing licenses are not public-domain grants. Built APKs include the legal documents under `assets/legal/`. This is a technical provenance audit, not a legal clearance.
 
-## UI update (v1.1)
+## Native UI and permission update (v1.2)
 
-There is still **one APK**. The inference engine, model, API 3 minimum, old target SDK and CPU support are unchanged. The layout now declares density awareness and all screen sizes instead of asking newer Android versions to use fixed legacy-screen scaling. Newer systems also receive resizable-activity/unrestricted-aspect-ratio declarations; older systems ignore declarations they do not implement.
+There is still **one APK**. **Minimum SDK is API 3; target SDK is now API 4.** That small target change removes Android's implied phone/storage permissions without raising the supported Android version or Java API boundary. The built APK has **zero requested or implied permissions**: no phone, account, storage or network access is requested. The model, inference engine, Java bytecode, DEX format and CPU support are unchanged.
 
-- Compact message row with a **Send / Stop** button and 48 dp minimum touch target.
-- Readable light colors, scalable text and flexible chat space on phones/tablets. The header/composer compact automatically when the available height is small, including landscape keyboards, multi-window and larger font settings.
-- Explicit keyboard resizing; the keyboard hides when a message is sent. Keyboards that honor the IME flag avoid the full-screen landscape editor.
-- Output follows the bottom only when you are already near it, rather than pulling you away from earlier messages.
-- Draft/transcript restoration after Activity recreation; interrupted replies are labeled, not silently restarted.
+- **Platform-native widgets throughout:** unskinned Android buttons, editor, text and scrolling. No custom button backgrounds, colors, fonts, fixed widget minimums or extra in-app title. Pressed/focused/disabled states come from the OS.
+- Native classic theme on old Android, native Holo on API 11–13, and device/OEM-default themes on API 14+. Light/night variants use platform theme resources rather than custom palettes. Appearance can legitimately differ across Android versions and manufacturers.
+- Reduced spacing on small screens without shrinking the user's text size. On narrow, sufficiently tall windows the editor gets its own full-width row; on short keyboard/landscape windows the composer stays inline, caps visible editor lines and hides optional status text.
+- Explicit keyboard resizing; the keyboard hides on Send. Keyboards that honor the IME flag avoid the full-screen landscape editor. Errors also use native Toast feedback when a short window hides status.
+- Density awareness, all screen sizes and newer resizable/unrestricted-aspect declarations are retained. Older systems ignore declarations they do not implement.
+- Output follows the bottom only when you are already near it. Draft/transcript restoration is retained; interrupted replies are labeled, not silently restarted.
 
-Code compiles against the Android 1.5 API stubs and APK screen/keyboard declarations pass automated checks. **No Android device or emulator was available for visual validation**, so this is not a claim that every OEM layout, keyboard, font size or old-device runtime has been verified. The target SDK has not been raised: modern installation warnings/blocks described below still apply.
+Code compiles against the Android 1.5 API stubs. Automated checks verify permission removal, packaged native themes and sizing-policy decisions, **not actual Android rendering or native widget measurements**. Visual testing on real devices remains pending; no connected personal device was installed onto or otherwise modified for these checks. Target API 4 is still an old target, so modern installation warnings/blocks described below remain.
 
 ## Compatibility and limits
 
-- **Android 1.5 / API 3 minimum.** Android UI calls compile against 1.5 API stubs; Java 5 bytecode is converted to DEX 035.
+- **Android 1.5 / API 3 minimum, API 4 target.** The target opts out of legacy permission grants; it does not raise the minimum. Android UI calls compile against 1.5 API stubs; Java 5 bytecode is converted to DEX 035.
 - **ARMv5 and MIPS by design**, as well as other architectures: inference is scalar Java running on Dalvik/ART. No JNI, `.so`, NEON, ARMv7, hardware floating-point, GPU or native ABI requirements. MIPS needs a working Android/Dalvik port; Android 1.5 was not a standard official MIPS release.
 - **Not yet tested on an Android device/emulator**, including ARMv5 or MIPS. Host verification and APK build checks pass; they do not certify every Android implementation.
 - Ancient ARMv5/MIPS CPUs may be **extremely slow**, especially without hardware floating point or a JIT. This is a compatibility-oriented implementation, not optimized native inference. No device throughput has been measured.
@@ -40,7 +41,7 @@ Code compiles against the Android 1.5 API stubs and APK screen/keyboard declarat
 - Default context **128 tokens**, including prompt and up to **32 reply tokens**. KV cache is 1.5 MiB. Short inputs only; excessive token counts produce an error rather than silently changing the prompt.
 - The engine passes a **16 MiB host JVM heap** smoke test. Android framework/UI overhead is additional; a 16 MiB Dalvik app heap may be insufficient. Prefer **24–32 MiB or larger app heaps**. This cannot guarantee operation on every 1.5-era handset.
 - Single-turn chat: each message starts fresh, although previous exchanges remain visible. Uses the checkpoint template `User: ...\nAssistant:`; replies are sampled at temperature 0.8, top-k 40, repetition penalty 1.15. No hardcoded duck/meow replies. Quantization and sampling can change output.
-- No network calls, requested permissions, external files, accounts, downloads or services at runtime. On later Android releases, the **old target SDK can cause Android to implicitly grant storage/phone compatibility permissions**. The app never uses those APIs.
+- No network calls, requested/implied permissions, external files, accounts, downloads or services at runtime. Earlier builds targeted API 3, which caused automatic phone/storage compatibility grants; v1.2 explicitly targets API 4 to remove those grants. APK checks reject any requested or implied permission.
 
 ### Install
 
@@ -84,7 +85,7 @@ To prefetch tools separately (for example before an offline build):
 
 The build script does not install anything system-wide. If tools are not on PATH, override `JAVAC`, `JAVA`, `JARSIGNER`, `KEYTOOL`, `AAPT`, `ANDROID_JAR`, `MANIFEST_ANDROID_JAR` and/or `DX_JAR` with your local tool locations. In particular, use a JDK **8** `javac`, not JDK 17/21 (which removed target 1.5). Custom Android/dx JAR overrides are your responsibility to provision and verify. Keep `ANDROID_JAR` pointed at API 3 to preserve the Java API boundary; `MANIFEST_ANDROID_JAR` needs API 26 or later for the screen-related declarations.
 
-Java still compiles **only against the pinned Android 1.5 Maven jar**. AAPT separately uses SDK Platform 26 to encode newer manifest attributes; this does not raise `minSdkVersion`, `targetSdkVersion`, Java bytecode or the DEX version. The framework JAR is neither compiled into the app nor bundled in it. The downloaded SDK platform remains subject to the [Android SDK terms](https://developer.android.com/studio/terms).
+Java still compiles **only against the pinned Android 1.5 Maven jar**. AAPT separately uses SDK Platform 26 to encode manifest attributes and version-qualified native themes. The manifest independently sets `minSdkVersion=3` and `targetSdkVersion=4`; using the newer packaging framework does not change those settings, Java bytecode or the DEX version. The framework JAR is neither compiled into the app nor bundled in it. The downloaded SDK platform remains subject to the [Android SDK terms](https://developer.android.com/studio/terms).
 
 The pinned Android Maven jar checks Android API references but excludes core Java stubs. Core Java calls have therefore also been kept to Java 5/Android 1.5-era APIs; no claim is made that host compilation alone verifies the entire old runtime.
 
@@ -98,6 +99,7 @@ These checks run from a checkout with the prerequisites above, without the origi
 
 ```sh
 python3 tests/smoke_test.py
+python3 tests/check_ui.py
 python3 tests/check_licenses.py
 ./build.sh
 python3 tests/check_apk.py
@@ -126,7 +128,8 @@ Observed host results:
 - Java incremental KV-cached inference versus the same int8-dequantized Hugging Face model: maximum absolute logit difference **0.000138**; all tested greedy token choices match.
 - Original float32 versus int8 reference logit RMS: **0.11385** on the test prompt; not a general quality benchmark.
 - Cache reset, generation smoke test, prompt bounds and thread cancellation pass under `java -Xmx16m`.
-- APK checks validate DEX 035 integrity, API 3 minimum, density/all-screen support, keyboard-resize/resizable-activity declarations, absence of native libraries, uncompressed bundled weights and legacy JAR signature metadata. `build.sh` also verifies the cryptographic JAR signature.
+- Native-UI checks verify platform-theme inheritance and 324 screen/density/font sizing-policy combinations plus boundary cases. These are policy/structure tests, not rendered UI tests.
+- APK checks validate DEX 035 integrity, API 3 minimum/API 4 target, zero requested/implied permissions, packaged native themes, density/all-screen support, keyboard-resize/resizable-activity declarations, absence of native libraries, uncompressed bundled weights and legacy JAR signature metadata. `build.sh` also verifies the cryptographic JAR signature.
 
 Old Android Unicode tables can differ from the host JVM for newer Unicode characters. Device-side tokenizer/inference and lifecycle testing is still required.
 
@@ -136,14 +139,16 @@ Old Android Unicode tables can differ from the host JVM for newer Unicode charac
 2. Confirm model loading completes without an out-of-memory or verification error.
 3. Send `hello`; wait for model-generated output, then try another short prompt.
 4. Test the Send/Stop action during prefill and generation, rotation, Back/relaunch, state restoration and an overlong message.
-5. On modern phones/tablets, check tall screens, high density, portrait/landscape, keyboard open/closed, large font settings and manual scrolling while tokens arrive. OEM compatibility overrides may still affect display behavior.
+5. On phones/tablets, check small/narrow/tall screens, portrait/landscape, keyboard open/closed, large fonts, native light/night themes, composer stacking, manual scrolling and readable error feedback. Verify the installed v1.2 build does not request Phone/Storage access. OEM compatibility overrides may still affect display behavior.
 6. Measure peak app heap, token latency and battery use before calling a particular device supported.
 
 ## Files
 
 - `src/org/brainrot/legacy/Model.java`: int8 matvecs, RMSNorm, split-half RoPE, grouped-query attention, causal KV cache, SwiGLU and sampling.
 - `src/org/brainrot/legacy/Tokenizer.java`: Digits + GPT-2 byte-level BPE.
-- `src/org/brainrot/legacy/ChatActivity.java`: API 3 UI, worker-thread loading/inference and cancellation.
+- `src/org/brainrot/legacy/ChatActivity.java`: native API 3 widgets, worker-thread loading/inference and cancellation.
+- `src/org/brainrot/legacy/UiLayout.java`: Android-independent small-screen sizing policy.
+- `res/values*/styles.xml`: version-qualified native platform themes, with no custom colors/drawables/fonts.
 - `assets/model.bin`: committed int8 weights and tokenizer, bundled in the APK.
 - `assets/model.bin.sha256`: model checksum, verified before every build.
 - `tools/export_model.py`: deterministic HF safetensors exporter.

@@ -39,7 +39,7 @@ with open(sys.argv[1], 'rb') as f:
     assert f.read(8) == b'dex\n035\x00', 'DEX format must be 035'
 PY
 "$AAPT" package -f -M "$ROOT/AndroidManifest.xml" -I "$MANIFEST_ANDROID_JAR" \
-    -A "$ROOT/assets" -0 bin -F "$BUILD/unsigned.apk"
+    -S "$ROOT/res" -A "$ROOT/assets" -0 bin -F "$BUILD/unsigned.apk"
 # Keep readable licenses, attribution and modification notices with the model/APK.
 mkdir -p "$BUILD/assets/legal/licenses"
 for document in LICENSE NOTICE MODEL_LICENSE.md THIRD_PARTY_NOTICES.md; do
