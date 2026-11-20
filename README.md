@@ -18,18 +18,19 @@ The base model `nkthebass/tinybrainbot-10m-v2-base` also declares Apache-2.0; **
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the audit, source links, confirmed declarations and open issues, plus [docs/upstream-licenses.json](docs/upstream-licenses.json) for the pinned documentation snapshots. Missing licenses are not public-domain grants. Built APKs include the legal documents under `assets/legal/`. This is a technical provenance audit, not a legal clearance.
 
-## Native UI and permission update (v1.2)
+## Native UI, full text and top bars (v1.3)
 
 There is still **one APK**. **Minimum SDK is API 3; target SDK is now API 4.** That small target change removes Android's implied phone/storage permissions without raising the supported Android version or Java API boundary. The built APK has **zero requested or implied permissions**: no phone, account, storage or network access is requested. The model, inference engine, Java bytecode, DEX format and CPU support are unchanged.
 
-- **Platform-native widgets throughout:** unskinned Android buttons, editor, text and scrolling. No custom button backgrounds, colors, fonts, fixed widget minimums or extra in-app title. Pressed/focused/disabled states come from the OS.
+- **Platform-native widgets throughout:** unskinned Android buttons, editor, text and scrolling. The native title/action bar is restored, and themes explicitly keep the system status bar visible. No custom button backgrounds, colors, fonts or fixed widget minimums; no duplicate hand-drawn app title. Pressed/focused/disabled states come from the OS.
 - Native classic theme on old Android, native Holo on API 11–13, and device/OEM-default themes on API 14+. Light/night variants use platform theme resources rather than custom palettes. Appearance can legitimately differ across Android versions and manufacturers.
 - Reduced spacing on small screens without shrinking the user's text size. On narrow, sufficiently tall windows the editor gets its own full-width row; on short keyboard/landscape windows the composer stays inline, caps visible editor lines and hides optional status text.
-- Explicit keyboard resizing; the keyboard hides on Send. Keyboards that honor the IME flag avoid the full-screen landscape editor. Errors also use native Toast feedback when a short window hides status.
+- Full earlier welcome, loading, ready, thinking and editor-hint wording is restored. Status text wraps without a line cap or ellipsis. Optional non-error status can still hide while the keyboard leaves very little space; errors remain inline.
+- Explicit keyboard resizing; the keyboard hides on Send. Keyboards that honor the IME flag avoid the full-screen landscape editor. There are **no app-owned startup warning dialogs or Toast popups**; failures are reported as full inline status text.
 - Density awareness, all screen sizes and newer resizable/unrestricted-aspect declarations are retained. Older systems ignore declarations they do not implement.
 - Output follows the bottom only when you are already near it. Draft/transcript restoration is retained; interrupted replies are labeled, not silently restarted.
 
-Code compiles against the Android 1.5 API stubs. Automated checks verify permission removal, packaged native themes and sizing-policy decisions, **not actual Android rendering or native widget measurements**. Visual testing on real devices remains pending; no connected personal device was installed onto or otherwise modified for these checks. Target API 4 is still an old target, so modern installation warnings/blocks described below remain.
+Code compiles against the Android 1.5 API stubs. Automated checks verify permission removal, packaged native themes and sizing-policy decisions, **not actual Android rendering or native widget measurements**. Visual testing on real devices remains pending; no connected personal device was installed onto or otherwise modified for these checks. Target API 4 is still an old target, so modern installation warnings/blocks described below remain. If Android itself displays a "built for an older version" warning, that is an OS-owned dialog, not an app popup; its removal has not been claimed by this update and needs a separate target-SDK compatibility review.
 
 ## Compatibility and limits
 
@@ -128,7 +129,7 @@ Observed host results:
 - Java incremental KV-cached inference versus the same int8-dequantized Hugging Face model: maximum absolute logit difference **0.000138**; all tested greedy token choices match.
 - Original float32 versus int8 reference logit RMS: **0.11385** on the test prompt; not a general quality benchmark.
 - Cache reset, generation smoke test, prompt bounds and thread cancellation pass under `java -Xmx16m`.
-- Native-UI checks verify platform-theme inheritance and 324 screen/density/font sizing-policy combinations plus boundary cases. These are policy/structure tests, not rendered UI tests.
+- Native-UI checks verify platform-theme inheritance, restored native top-bar flags, full wording/no status line caps, absence of app-owned popup feedback, and 324 screen/density/font sizing-policy combinations plus boundary cases. These are policy/structure tests, not rendered UI tests.
 - APK checks validate DEX 035 integrity, API 3 minimum/API 4 target, zero requested/implied permissions, packaged native themes, density/all-screen support, keyboard-resize/resizable-activity declarations, absence of native libraries, uncompressed bundled weights and legacy JAR signature metadata. `build.sh` also verifies the cryptographic JAR signature.
 
 Old Android Unicode tables can differ from the host JVM for newer Unicode characters. Device-side tokenizer/inference and lifecycle testing is still required.
@@ -139,7 +140,7 @@ Old Android Unicode tables can differ from the host JVM for newer Unicode charac
 2. Confirm model loading completes without an out-of-memory or verification error.
 3. Send `hello`; wait for model-generated output, then try another short prompt.
 4. Test the Send/Stop action during prefill and generation, rotation, Back/relaunch, state restoration and an overlong message.
-5. On phones/tablets, check small/narrow/tall screens, portrait/landscape, keyboard open/closed, large fonts, native light/night themes, composer stacking, manual scrolling and readable error feedback. Verify the installed v1.2 build does not request Phone/Storage access. OEM compatibility overrides may still affect display behavior.
+5. On phones/tablets, check small/narrow/tall screens, portrait/landscape, keyboard open/closed, large fonts, native light/night themes, composer stacking, manual scrolling and readable error feedback. Verify the installed v1.3 build does not request Phone/Storage access and restores the native top bars and full inline wording. OEM compatibility overrides may still affect display behavior.
 6. Measure peak app heap, token latency and battery use before calling a particular device supported.
 
 ## Files

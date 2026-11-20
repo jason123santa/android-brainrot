@@ -16,7 +16,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 import java.io.InputStream;
 
 /** API 3-only UI. All model loading and inference stay off the main thread. */
@@ -32,7 +31,10 @@ public final class ChatActivity extends Activity {
     private LinearLayout composer;
     private LinearLayout.LayoutParams chatSize;
     private UiLayout layoutPolicy;
+    private boolean statusIsError;
     private static final int CONTEXT = 128, NEW_TOKENS = 32;
+    private static final String WELCOME_TEXT = "Send a short message to start. Replies are generated offline.\nEach message starts a fresh context.\n";
+    private static final String READY_STATUS = "Ready - 128-token context, 32-token replies. CPU only.";
 
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
@@ -48,12 +50,11 @@ public final class ChatActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(4), dp(4), dp(4), dp(4));
         // Native window/theme provides the background, fonts and colors.
-        // Avoid an extra in-app title that takes space from small screens.
+        // The native window title/action bar identifies the app; do not draw a duplicate.
         root.setFocusableInTouchMode(true);
         status = new TextView(this);
         status.setTextAppearance(this, android.R.style.TextAppearance_Small);
-        status.setMaxLines(2);
-        status.setText("Loading model...");
+        status.setText("Loading offline model...");
         root.addView(status, new LinearLayout.LayoutParams(-1, -2));
         scroll = new ScrollView(this);
         scroll.setFillViewport(true);
@@ -63,7 +64,7 @@ public final class ChatActivity extends Activity {
         transcript.setPadding(dp(4), dp(4), dp(4), dp(4));
         transcript.setGravity(Gravity.TOP | Gravity.LEFT);
         String previous = savedState == null ? null : savedState.getString("transcript");
-        if (previous == null) previous = "Offline chat. Keep messages short; each starts fresh.\n";
+        if (previous == null) previous = WELCOME_TEXT;
         if (savedState != null && savedState.getBoolean("generating"))
             previous += "\n[The previous reply stopped when the screen was recreated.]\n";
         transcript.setText(previous);
@@ -75,7 +76,7 @@ public final class ChatActivity extends Activity {
         composer = new LinearLayout(this);
         composer.setGravity(Gravity.BOTTOM);
         input = new EditText(this);
-        input.setHint("Message");
+        input.setHint("Message (short prompts work best)");
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE |
                            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         input.setMinLines(1); input.setMaxLines(2);
@@ -98,7 +99,7 @@ public final class ChatActivity extends Activity {
             public void onClick(View view) {
                 if (worker != null) {
                     worker.interrupt(); status.setText("Stopping...");
-                    send.setEnabled(false);
+                    send.setText("Stopping..."); send.setEnabled(false);
                 } else beginGeneration();
             }
         });
@@ -118,7 +119,7 @@ public final class ChatActivity extends Activity {
                         public void run() {
                             model = loaded; worker = null;
                             input.setEnabled(true); send.setEnabled(true);
-                            status.setText("Ready (offline)");
+                            status.setText(READY_STATUS);
                         }
                     });
                 } catch (Exception e) { failure("Could not load model: " + e.toString(), true); }
@@ -139,8 +140,8 @@ public final class ChatActivity extends Activity {
         root.setPadding(padding, padding, padding, padding);
         int chatPadding = dp(policy.chatPaddingDp);
         transcript.setPadding(chatPadding, chatPadding, chatPadding, chatPadding);
-        status.setVisibility(policy.showStatus ? View.VISIBLE : View.GONE);
-        status.setMaxLines(policy.statusLines);
+        // Keep complete, wrapping status text; errors must remain visible inline.
+        status.setVisibility(policy.showStatus || statusIsError ? View.VISIBLE : View.GONE);
         input.setMaxLines(policy.inputLines);
         chatSize.topMargin = dp(policy.gapDp); chatSize.bottomMargin = dp(policy.gapDp);
         scroll.setLayoutParams(chatSize);
@@ -184,7 +185,9 @@ public final class ChatActivity extends Activity {
         InputMethodManager keyboard = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         if (keyboard != null) keyboard.hideSoftInputFromWindow(input.getWindowToken(), 0);
         send.setText("Stop"); send.setEnabled(true); input.setEnabled(false);
-        status.setText("Thinking...");
+        statusIsError = false;
+        status.setVisibility(layoutPolicy == null || layoutPolicy.showStatus ? View.VISIBLE : View.GONE);
+        status.setText("Thinking... Old CPUs may take a long time. Stop cancels.");
         worker = new Thread(new Runnable() {
             public void run() {
                 try {
@@ -202,7 +205,7 @@ public final class ChatActivity extends Activity {
                         public void run() {
                             updateTranscript(prefix + (reply.length() == 0 ? "(no text)" : reply) + "\n", false);
                             input.setText("");
-                            finishWork("Ready");
+                            finishWork(READY_STATUS);
                         }
                     });
                 } catch (InterruptedException e) { failure("Stopped", false); }
@@ -218,9 +221,9 @@ public final class ChatActivity extends Activity {
             public void run() {
                 if (fatal) model = null;
                 finishWork(message);
-                // Native feedback stays visible even if a tiny keyboard window hides status.
-                if (!"Stopped".equals(message))
-                    Toast.makeText(ChatActivity.this, message, Toast.LENGTH_LONG).show();
+                // Report errors as full inline text, never as a startup/popup warning.
+                statusIsError = !"Stopped".equals(message);
+                if (statusIsError) status.setVisibility(View.VISIBLE);
             }
         });
     }

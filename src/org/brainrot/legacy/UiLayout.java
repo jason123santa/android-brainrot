@@ -3,7 +3,7 @@ package org.brainrot.legacy;
 
 /** Testable sizing rules only; colors, fonts and widget minimums remain native. */
 final class UiLayout {
-    final int paddingDp, chatPaddingDp, gapDp, inputLines, statusLines;
+    final int paddingDp, chatPaddingDp, gapDp, inputLines;
     final boolean showStatus, stackedComposer;
 
     private UiLayout(boolean compact, boolean veryCompact, boolean stacked) {
@@ -11,7 +11,6 @@ final class UiLayout {
         chatPaddingDp = compact ? 2 : 4;
         gapDp = compact ? 2 : 4;
         inputLines = veryCompact ? 1 : (compact ? 2 : 3);
-        statusLines = compact ? 1 : 2;
         showStatus = !veryCompact;
         stackedComposer = stacked;
     }
@@ -30,7 +29,7 @@ final class UiLayout {
 
     boolean sameAs(UiLayout other) {
         return other != null && paddingDp == other.paddingDp && chatPaddingDp == other.chatPaddingDp &&
-            gapDp == other.gapDp && inputLines == other.inputLines && statusLines == other.statusLines &&
+            gapDp == other.gapDp && inputLines == other.inputLines &&
             showStatus == other.showStatus && stackedComposer == other.stackedComposer;
     }
 }

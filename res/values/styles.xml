@@ -2,7 +2,8 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <resources>
     <!-- Native Android 1.5 theme; no custom colors, fonts or widget drawables. -->
-    <style name="AppTheme" parent="@android:style/Theme.NoTitleBar">
-        <item name="android:windowNoTitle">true</item>
+    <style name="AppTheme" parent="@android:style/Theme">
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:windowFullscreen">false</item>
     </style>
 </resources>
